@@ -1,226 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CounterVerse v4.0</title>
 
-<meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>CounterVerse</title>
-<link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
-
 
 <body>
 
+    <!-- GAME CANVAS -->
+    <canvas id="gameCanvas"></canvas>
 
-<!-- GAME CANVAS -->
+    <!-- =========================
+         START SCREEN
+    ========================== -->
 
-<canvas id="game"></canvas>
+    <div id="startScreen">
 
+        <div class="startCard">
 
+            <h1>🚀 CounterVerse</h1>
 
+            <h2>Version 4.0 — Foundation</h2>
 
-<! START SCREEN>
-<div id="startScreen">
+            <p>
+                Explore a living universe powered by the Gravity Core.
+            </p>
 
+            <button id="playButton">
+                🚀 PLAY
+            </button>
 
-    <div class="startCard">
+            <button id="multiplayerButton">
+                🌌 MULTIPLAYER
+            </button>
 
+            <button id="settingsButton">
+                ⚙ SETTINGS
+            </button>
 
-        <h1>🚀 CounterVerse</h1>
+            <div class="comingSoon">
+                Multiplayer Coming Soon
+            </div>
 
-<div id="version">
-    v3.1 — Gravity Core Update
-</div>
-
-
-<p id="loadingText">
-    Initializing universe...
-</p>
-
-
-        <p>
-            Explore a universe powered by a living gravity core.
-        </p>
-
-
-        <button id="startButton">
-            🚀 Launch
-        </button>
-
-
-        <button id="multiplayerButton">
-            🌐 Multiplayer
-        </button>
-        <div id="multiplayerNotice">
-    🌐 Multiplayer systems are coming soon...
-</div>
+        </div>
 
     </div>
 
 
-</div>
+    <!-- =========================
+         TOP BAR
+    ========================== -->
+
+    <header id="topBar">
+
+        <div id="logo">
+
+            🚀 CounterVerse
+
+        </div>
+
+        <button id="openSettings">
+
+            ⚙
+
+        </button>
+
+    </header>
 
 
 
+    <!-- =========================
+         LEFT HUD
+    ========================== -->
+
+    <aside id="leftHUD">
+
+        <div class="hudCard">
+
+            ⭐ Score
+
+            <span id="score">0</span>
+
+        </div>
+
+        <div class="hudCard">
+
+            🏆 Best
+
+            <span id="best">0</span>
+
+        </div>
+
+        <div class="hudCard">
+
+            🔥 Combo
+
+            <span id="combo">x1</span>
+
+        </div>
+
+    </aside>
 
 
 
+    <!-- =========================
+         CENTER PANEL
+    ========================== -->
 
-<!-- SCORE -->
+    <section id="counterPanel">
 
-<div id="hud">
+        <h2>COUNTER CORE</h2>
 
+        <div id="counterValue">
 
-    ⭐ Score:
-    <span id="score">0</span>
+            0
 
+        </div>
 
-    <br>
+        <div id="stabilityBar">
 
+            <div id="stabilityFill"></div>
 
-    🏆 Best:
-    <span id="best">0</span>
+        </div>
 
+        <div id="stabilityText">
 
-    <br>
+            Stable
 
+        </div>
 
-    🔥 Combo:
-    <span id="combo">x1</span>
+        <div class="counterButtons">
 
+            <button id="minus">−</button>
 
-</div>
+            <button id="plus">+</button>
 
+        </div>
 
-
-
-
-
-
-
-<!-- COUNTER -->
-
-<div id="counterPanel">
-
-
-    <h2>
-        COUNTER
-    </h2>
+    </section>
 
 
-    <div id="count">
-        0
+
+    <!-- =========================
+         RIGHT PANEL
+    ========================== -->
+
+    <aside id="rightHUD">
+
+        <button id="boom">
+
+            💥 BOOM
+
+        </button>
+
+        <button id="sweep">
+
+            🧹 SWEEP
+
+        </button>
+
+        <button id="pause">
+
+            ⏸ PAUSE
+
+        </button>
+
+        <button id="settings">
+
+            ⚙ SETTINGS
+
+        </button>
+
+    </aside>
+
+
+
+    <!-- =========================
+         MOBILE CONTROLS
+    ========================== -->
+
+    <div id="mobileControls">
+
+        <button id="left">
+
+            ◀
+
+        </button>
+
+        <button id="thrust">
+
+            🚀
+
+        </button>
+
+        <button id="right">
+
+            ▶
+
+        </button>
+
+        <button id="brake">
+
+            ⏹
+
+        </button>
+
     </div>
 
 
 
-    <div class="counterButtons">
+    <script src="script.js"></script>
 
-
-        <button id="minus">
-            -
-        </button>
-
-
-        <button id="plus">
-            +
-        </button>
-
-
-    </div>
-
-
-</div>
-
-
-
-
-
-
-
-<!-- CORE INFO -->
-
-<div id="coreInfo">
-
-
-    🌌 Core:
-    <span id="coreValue">
-        0
-    </span>
-
-
-</div>
-
-
-
-
-
-
-
-<!-- GAME BUTTONS -->
-
-<div id="tools">
-
-
-    <button id="boom">
-        💥 BOOM
-    </button>
-
-
-    <button id="clean">
-        🧹 CLEAN
-    </button>
-
-
-    <button id="pause">
-        ⏸ PAUSE
-    </button>
-
-
-</div>
-
-
-
-
-
-
-
-
-<!-- MOBILE CONTROLS -->
-
-<div id="mobileControls">
-
-
-    <button id="left">
-        ◀
-    </button>
-
-
-    <button id="thrust">
-        🚀
-    </button>
-
-
-    <button id="right">
-        ▶
-    </button>
-
-
-    <button id="brake">
-        ⏹
-    </button>
-
-
-</div>
-
-
-
-
-
-
-<script src="script.js"></script>
 </body>
 </html>
