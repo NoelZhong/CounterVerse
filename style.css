@@ -529,3 +529,69 @@ button:hover{
 
 
 }
+/*========================================
+ COUNTERVERSE v3.1 LAUNCH SCREEN
+========================================*/
+
+
+#version{
+
+    color:#58a6ff;
+
+    font-size:14px;
+
+    margin-top:10px;
+
+    letter-spacing:2px;
+
+}
+
+
+
+#loadingText{
+
+    color:#8b949e;
+
+    min-height:25px;
+
+    animation:
+
+    loadingPulse 1.5s infinite;
+
+}
+
+
+
+@keyframes loadingPulse{
+
+    50%{
+
+        opacity:.35;
+
+    }
+
+}
+
+
+
+#startButton{
+
+    animation:
+
+    launchGlow 2s infinite;
+
+}
+
+
+
+@keyframes launchGlow{
+
+    50%{
+
+        box-shadow:
+
+        0 0 30px #58a6ff;
+
+    }
+
+}
