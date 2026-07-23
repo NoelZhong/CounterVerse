@@ -1787,7 +1787,182 @@ document
 
 
 
+/*================================================
+ COUNTERVERSE v3.1
 
+ MOBILE SHIP CONTROLS
+================================================*/
+
+
+const mobileControlState = {
+
+    left:false,
+
+    right:false,
+
+    thrust:false,
+
+    brake:false
+
+};
+
+
+
+function holdButton(id, action){
+
+
+    const button =
+    document.getElementById(id);
+
+
+
+    button.addEventListener(
+    "touchstart",
+    (e)=>{
+
+        e.preventDefault();
+
+        mobileControlState[action]=true;
+
+    },
+    {passive:false}
+    );
+
+
+
+    button.addEventListener(
+    "touchend",
+    ()=>{
+
+        mobileControlState[action]=false;
+
+    }
+    );
+
+
+
+    button.addEventListener(
+    "mousedown",
+    ()=>{
+
+        mobileControlState[action]=true;
+
+    }
+    );
+
+
+
+    button.addEventListener(
+    "mouseup",
+    ()=>{
+
+        mobileControlState[action]=false;
+
+    }
+    );
+
+
+    button.addEventListener(
+    "mouseleave",
+    ()=>{
+
+        mobileControlState[action]=false;
+
+    }
+    );
+
+}
+
+
+
+holdButton("left","left");
+
+holdButton("right","right");
+
+holdButton("thrust","thrust");
+
+holdButton("brake","brake");
+
+
+
+
+
+/* Add mobile controls into ship physics */
+
+
+const oldUpdateShip =
+updateShip;
+
+
+
+updateShip=function(dt){
+
+
+
+    if(mobileControlState.left){
+
+        ship.angle-=
+
+        ship.turnSpeed*dt;
+
+    }
+
+
+
+    if(mobileControlState.right){
+
+        ship.angle+=
+
+        ship.turnSpeed*dt;
+
+    }
+
+
+
+
+    if(mobileControlState.thrust){
+
+
+        ship.speed+=
+
+        ship.thrust*dt;
+
+
+
+        spawnParticle(
+
+            ship.x,
+
+            ship.y,
+
+            "engine"
+
+        );
+
+
+    }
+
+
+
+
+
+    if(mobileControlState.brake){
+
+
+        ship.speed-=
+
+        250*dt;
+
+
+    }
+
+
+
+
+    oldUpdateShip(dt);
+
+
+};
 
 
 
