@@ -163,7 +163,87 @@ document
 
 
 
+/*========================================
+ COUNTERVERSE v3.1 LAUNCH SEQUENCE
+========================================*/
 
+
+const loadingText =
+document.getElementById("loadingText");
+
+
+const loadingMessages=[
+
+    "Initializing gravity core...",
+
+    "Calibrating engines...",
+
+    "Charging particle systems...",
+
+    "Mapping the CounterVerse...",
+
+    "Ready for launch!"
+
+];
+
+
+let loadingIndex=0;
+
+
+
+setInterval(()=>{
+
+
+    if(!game.started){
+
+
+        loadingText.textContent=
+
+        loadingMessages[loadingIndex];
+
+
+        loadingIndex++;
+
+
+        if(
+
+        loadingIndex>=loadingMessages.length
+
+        ){
+
+            loadingIndex=0;
+
+        }
+
+
+    }
+
+
+},1800);
+
+
+
+
+
+document
+
+.getElementById("startButton")
+
+.addEventListener(
+
+"click",
+
+()=>{
+
+
+    loadingText.textContent=
+
+    "🚀 Launching...";
+
+
+}
+
+);
 
 /*================================================
  MULTIPLAYER NOTICE
