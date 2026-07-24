@@ -930,3 +930,424 @@ function gameLoop(time){
 resetWorld();
 
 requestAnimationFrame(gameLoop);
+// =====================================================
+// CounterVerse v4.0
+// Milestone 3A - Physics Stabilization
+// Part 2/2
+// =====================================================
+
+
+// ===============================
+// Core Update
+// ===============================
+
+function updateCore(dt){
+
+
+    core.x += core.vx * dt;
+
+    core.y += core.vy * dt;
+
+
+
+    // soft boundary correction
+    // keeps the Core in the universe area
+
+    const margin = 3000;
+
+
+    if(core.x < -margin ||
+       core.x > canvas.width + margin){
+
+        core.vx *= -1;
+
+    }
+
+
+    if(core.y < -margin ||
+       core.y > canvas.height + margin){
+
+        core.vy *= -1;
+
+    }
+
+
+}
+
+
+
+// ===============================
+// Camera Follow
+// Camera ONLY changes view
+// ===============================
+
+function updateCamera(){
+
+
+    const targetX =
+    ship.x -
+    canvas.width/2;
+
+
+    const targetY =
+    ship.y -
+    canvas.height/2;
+
+
+
+    camera.x +=
+    (targetX-camera.x)
+    *
+    camera.smooth;
+
+
+    camera.y +=
+    (targetY-camera.y)
+    *
+    camera.smooth;
+
+
+}
+
+
+
+// ===============================
+// Safety Check
+// ===============================
+
+function checkObject(object){
+
+
+    if(
+        !Number.isFinite(object.x) ||
+        !Number.isFinite(object.y) ||
+        !Number.isFinite(object.vx) ||
+        !Number.isFinite(object.vy)
+    ){
+
+        resetWorld();
+
+    }
+
+
+}
+
+
+
+// ===============================
+// Stars
+// ===============================
+
+const stars=[];
+
+
+function createStars(){
+
+
+    for(let i=0;i<300;i++){
+
+
+        stars.push({
+
+            x:
+            Math.random()*6000-3000,
+
+
+            y:
+            Math.random()*6000-3000,
+
+
+            size:
+            Math.random()*2+0.5
+
+        });
+
+
+    }
+
+
+}
+
+
+createStars();
+
+
+
+// ===============================
+// Drawing
+// ===============================
+
+function drawBackground(){
+
+
+    ctx.fillStyle =
+    "#020611";
+
+
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+
+    ctx.save();
+
+
+
+    ctx.translate(
+        -camera.x*0.15,
+        -camera.y*0.15
+    );
+
+
+
+    for(const star of stars){
+
+
+        ctx.fillStyle =
+        "white";
+
+
+        ctx.globalAlpha =
+        0.4 +
+        Math.random()*0.6;
+
+
+
+        ctx.beginPath();
+
+
+        ctx.arc(
+            star.x,
+            star.y,
+            star.size,
+            0,
+            Math.PI*2
+        );
+
+
+        ctx.fill();
+
+
+    }
+
+
+    ctx.globalAlpha=1;
+
+
+    ctx.restore();
+
+
+}
+
+
+
+// ===============================
+// Draw Core
+// ===============================
+
+function drawCore(){
+
+
+    const x =
+    core.x-camera.x;
+
+
+    const y =
+    core.y-camera.y;
+
+
+
+    ctx.shadowBlur=60;
+
+    ctx.shadowColor =
+    "#00e5ff";
+
+
+    ctx.fillStyle =
+    "#00e5ff";
+
+
+
+    ctx.beginPath();
+
+
+    ctx.arc(
+        x,
+        y,
+        core.radius,
+        0,
+        Math.PI*2
+    );
+
+
+    ctx.fill();
+
+
+
+    ctx.shadowBlur=0;
+
+
+}
+
+
+
+// ===============================
+// Draw Ship
+// ===============================
+
+function drawShip(){
+
+
+    const x =
+    ship.x-camera.x;
+
+
+    const y =
+    ship.y-camera.y;
+
+
+
+    ctx.save();
+
+
+    ctx.translate(
+        x,
+        y
+    );
+
+
+    ctx.rotate(
+        ship.angle
+    );
+
+
+
+    ctx.fillStyle =
+    "#ffffff";
+
+
+
+    ctx.beginPath();
+
+
+    ctx.moveTo(
+        28,
+        0
+    );
+
+
+    ctx.lineTo(
+        -18,
+        -12
+    );
+
+
+    ctx.lineTo(
+        -8,
+        0
+    );
+
+
+    ctx.lineTo(
+        -18,
+        12
+    );
+
+
+    ctx.closePath();
+
+
+    ctx.fill();
+
+
+
+    ctx.restore();
+
+
+}
+
+
+
+// ===============================
+// Game Loop
+// ===============================
+
+let lastTime=0;
+
+
+function gameLoop(time){
+
+
+    const dt =
+    Math.min(
+        (time-lastTime)/1000,
+        0.05
+    );
+
+
+    lastTime=time;
+
+
+
+    if(gameRunning && !paused){
+
+
+        updateShip(dt);
+
+
+        updateCore(dt);
+
+
+        updateCamera();
+
+
+        checkObject(ship);
+
+
+        checkObject(core);
+
+
+    }
+
+
+
+    drawBackground();
+
+
+
+    if(gameRunning){
+
+
+        drawCore();
+
+
+        drawShip();
+
+
+    }
+
+
+
+    requestAnimationFrame(
+        gameLoop
+    );
+
+
+}
+
+
+
+// ===============================
+// Start
+// ===============================
+
+resetWorld();
+
+
+requestAnimationFrame(
+gameLoop
+);
