@@ -1,217 +1,265 @@
-/*================================================
-
- COUNTERVERSE v3.0
-
- JAVASCRIPT
- PART 1/3
-
- ENGINE + SHIP
-
-================================================*/
+// =====================================================
+// CounterVerse v4.0
+// Milestone 3 - Universe Effects
+// Part 1/2
+// =====================================================
 
 
-"use strict";
-
-
-
-/*================================================
- CANVAS
-================================================*/
-
+// ===============================
+// Canvas
+// ===============================
 
 const canvas =
-document.getElementById("game");
-
+document.getElementById("gameCanvas");
 
 const ctx =
 canvas.getContext("2d");
 
 
 
-function resize(){
-
+function resizeCanvas(){
 
     canvas.width =
-    innerWidth;
-
+    window.innerWidth;
 
     canvas.height =
-    innerHeight;
-
+    window.innerHeight;
 
 }
 
 
-addEventListener(
+window.addEventListener(
 "resize",
-resize
+resizeCanvas
 );
 
-
-resize();
-
+resizeCanvas();
 
 
 
+// ===============================
+// UI
+// ===============================
 
+const startScreen =
+document.getElementById("startScreen");
 
-
-/*================================================
- GAME STATE
-================================================*/
-
-
-const game={
-
-
-    started:false,
-
-
-    paused:false,
-
-
-    score:0,
-
-
-    best:
-
-    Number(
-
-    localStorage.counterVerseBest
-
-    )
-
-    ||0,
-
-
-
-    combo:1,
-
-
-    counter:0,
-
-
-    flash:0,
-
-
-    flashColor:"#ffffff",
-
-
-    shake:0
-
-
-};
-
-
-
-
-
-
-
-/*================================================
- UI
-================================================*/
+const playButton =
+document.getElementById("playButton");
 
 
 const scoreText =
 document.getElementById("score");
 
-
 const bestText =
 document.getElementById("best");
-
 
 const comboText =
 document.getElementById("combo");
 
 
-
-bestText.textContent=
-game.best;
-
+const counterValue =
+document.getElementById("counterValue");
 
 
+const stabilityFill =
+document.getElementById("stabilityFill");
+
+
+const stabilityText =
+document.getElementById("stabilityText");
 
 
 
-
-/*================================================
- START BUTTON
-================================================*/
+const plusButton =
+document.getElementById("plus");
 
 
-document
-.getElementById("startButton")
-.onclick=()=>{
+const minusButton =
+document.getElementById("minus");
 
 
-    document
-    .getElementById("startScreen")
-    .style.display="none";
+const boomButton =
+document.getElementById("boom");
 
 
-    game.started=true;
+const sweepButton =
+document.getElementById("sweep");
 
 
-    requestAnimationFrame(loop);
+const pauseButton =
+document.getElementById("pause");
 
+
+
+// ===============================
+// Game
+// ===============================
+
+let gameRunning=false;
+
+let paused=false;
+
+
+
+let score=0;
+
+let best=
+Number(
+localStorage.getItem(
+"counterVerseBest"
+)
+)||0;
+
+
+let combo=1;
+
+let counter=0;
+
+let stability=70;
+
+
+
+// ===============================
+// Camera
+// ===============================
+
+const camera={
+
+    x:0,
+    y:0
 
 };
 
 
 
+// ===============================
+// Ship
+// ===============================
+
+const ship={
+
+    x:0,
+    y:0,
+
+    vx:0,
+    vy:0,
+
+    angle:-Math.PI/2,
+
+    radius:18,
+
+    thrust:320,
+
+    turnSpeed:3.5
+
+};
 
 
 
-/*========================================
- COUNTERVERSE v3.1 LAUNCH SEQUENCE
-========================================*/
+// ===============================
+// Core
+// ===============================
 
+const core={
 
-const loadingText =
-document.getElementById("loadingText");
+    x:0,
+    y:0,
 
+    vx:35,
+    vy:-25,
 
-const loadingMessages=[
+    radius:55,
 
-    "Initializing gravity core...",
+    mass:80000
 
-    "Calibrating engines...",
-
-    "Charging particle systems...",
-
-    "Mapping the CounterVerse...",
-
-    "Ready for launch!"
-
-];
-
-
-let loadingIndex=0;
+};
 
 
 
-setInterval(()=>{
+// ===============================
+// Particles
+// ===============================
+
+let particles=[];
 
 
-    if(!game.started){
+
+function spawnParticle(
+x,
+y,
+color,
+amount=1
+){
 
 
-        loadingText.textContent=
+    for(
+    let i=0;
+    i<amount;
+    i++
+    ){
 
-        loadingMessages[loadingIndex];
+
+        particles.push({
+
+            x:x,
+
+            y:y,
+
+            vx:
+            (Math.random()-.5)
+            *300,
 
 
-        loadingIndex++;
+            vy:
+            (Math.random()-.5)
+            *300,
 
 
-        if(
+            life:1,
 
-        loadingIndex>=loadingMessages.length
 
-        ){
+            size:
+            Math.random()*4+2,
 
-            loadingIndex=0;
+
+            color:color
+
+        });
+
+
+    }
+
+
+}
+
+
+
+function updateParticles(dt){
+
+
+    for(
+    let i=particles.length-1;
+    i>=0;
+    i--
+    ){
+
+
+        const p =
+        particles[i];
+
+
+        p.x += p.vx*dt;
+
+        p.y += p.vy*dt;
+
+
+        p.life -= dt;
+
+
+        if(p.life<=0){
+
+            particles.splice(i,1);
 
         }
 
@@ -219,404 +267,550 @@ setInterval(()=>{
     }
 
 
-},1800);
-
-
-
-
-
-document
-
-.getElementById("startButton")
-
-.addEventListener(
-
-"click",
-
-()=>{
-
-
-    loadingText.textContent=
-
-    "🚀 Launching...";
-
-
 }
 
-);
-
-/*================================================
- MULTIPLAYER NOTICE
-================================================*/
 
 
-document
-.getElementById("multiplayerButton")
-.onclick=()=>{
-
-
-    alert(
-
-    "🌐 CounterVerse Multiplayer\n\n" +
-
-    "The multiplayer network is still being built.\n\n" +
-
-    "Future update:\n" +
-
-    "🚀 Shared ships\n" +
-
-    "🌌 Shared Counter Core\n" +
-
-    "💥 Shared explosions"
-
-    );
-
-
-};
-
-
-
-
-
-
-
-
-
-/*================================================
- INPUT
-================================================*/
-
+// ===============================
+// Input
+// ===============================
 
 const keys={};
 
 
-
-onkeydown=e=>{
-
-
-    keys[e.key]=true;
-
+window.addEventListener(
+"keydown",
+e=>keys[e.code]=true
+);
 
 
-    if(e.key==="Escape")
-
-        togglePause();
-
-
-};
+window.addEventListener(
+"keyup",
+e=>keys[e.code]=false
+);
 
 
 
-onkeyup=e=>{
+// ===============================
+// Reset
+// ===============================
 
-
-    keys[e.key]=false;
-
-
-};
-
-
-
-
-
-
-
-
-/*================================================
- SHIP
-================================================*/
-
-
-const ship={
-
-
-
-    x:0,
-
-
-    y:0,
-
-
-    angle:-Math.PI/2,
-
-
-    speed:0,
-
-
-    maxSpeed:350,
-
-
-    turnSpeed:4,
-
-
-    thrust:190
-
-
-};
-
-
-
-
-
-
-function resetShip(){
+function resetWorld(){
 
 
     ship.x=
-
     canvas.width/2;
 
 
     ship.y=
-
     canvas.height*.75;
 
+
+    ship.vx=0;
+
+    ship.vy=0;
+
+
+
+    core.x=
+    canvas.width/2;
+
+
+    core.y=
+    canvas.height/2;
+
+
+
+    score=0;
+
+    combo=1;
+
+    counter=0;
+
+    stability=70;
+
+
+    particles=[];
+
+
+
+    updateHUD();
 
 }
 
 
 
-resetShip();
+// ===============================
+// Start
+// ===============================
+
+playButton.onclick=()=>{
+
+
+    resetWorld();
+
+
+    gameRunning=true;
+
+
+    startScreen.style.display="none";
+
+
+};
+// =====================================================
+// CounterVerse v4.0
+// Milestone 3 - Universe Effects
+// Part 2/2
+// =====================================================
+
+
+// ===============================
+// Ship Physics
+// ===============================
+
+function applyGravity(body){
+
+    const dx =
+    core.x-body.x;
+
+    const dy =
+    core.y-body.y;
+
+
+    const distance =
+    Math.sqrt(
+        dx*dx+
+        dy*dy
+    );
+
+
+    if(distance < 1)
+        return;
+
+
+    const force =
+    core.mass /
+    (distance*distance);
 
 
 
+    body.vx +=
+    (dx/distance)
+    *
+    force
+    *
+    0.016;
 
 
+    body.vy +=
+    (dy/distance)
+    *
+    force
+    *
+    0.016;
+
+}
 
 
 
 function updateShip(dt){
 
 
-
-    if(
-
-    keys["a"]
-
-    ||
-
-    keys["ArrowLeft"]
-
-    )
-
-    ship.angle-=
-
-    ship.turnSpeed*dt;
+    if(keys["ArrowLeft"] ||
+       keys["KeyA"])
+    {
+        ship.angle -=
+        ship.turnSpeed*dt;
+    }
 
 
+    if(keys["ArrowRight"] ||
+       keys["KeyD"])
+    {
+        ship.angle +=
+        ship.turnSpeed*dt;
+    }
 
 
+    if(keys["ArrowUp"] ||
+       keys["KeyW"])
+    {
+
+        ship.vx +=
+        Math.cos(ship.angle)
+        *
+        ship.thrust
+        *
+        dt;
 
 
-    if(
-
-    keys["d"]
-
-    ||
-
-    keys["ArrowRight"]
-
-    )
-
-    ship.angle+=
-
-    ship.turnSpeed*dt;
-
-
-
-
-
-
-
-    if(
-
-    keys["w"]
-
-    ||
-
-    keys["ArrowUp"]
-
-    ){
-
-
-
-        ship.speed+=
-
-        ship.thrust*dt;
-
-
-
-        spawnParticle(
-
-            ship.x,
-
-            ship.y,
-
-            "engine"
-
-        );
+        ship.vy +=
+        Math.sin(ship.angle)
+        *
+        ship.thrust
+        *
+        dt;
 
 
     }
 
 
+    applyGravity(ship);
+
+
+    ship.x += ship.vx*dt;
+
+    ship.y += ship.vy*dt;
+
+}
 
 
 
+// ===============================
+// Core
+// ===============================
 
+function updateCore(dt){
 
-    if(keys[" "]){
+    core.x += core.vx*dt;
 
-
-        ship.speed-=
-
-        250*dt;
-
-
-    }
-
-
-
-
-
-
-
-    ship.speed*=.985;
-
-
-
-    ship.speed=Math.max(
-
-    0,
-
-    Math.min(
-
-    ship.speed,
-
-    ship.maxSpeed
-
-    )
-
-    );
-
-
-
-
-
-
-
-    ship.x+=
-
-    Math.cos(ship.angle)
-
-    *
-
-    ship.speed
-
-    *
-
-    dt;
-
-
-
-
-
-    ship.y+=
-
-    Math.sin(ship.angle)
-
-    *
-
-    ship.speed
-
-    *
-
-    dt;
-
-
-
-
-
-
-
-    wrap(ship);
-
+    core.y += core.vy*dt;
 
 
 }
 
 
 
+// ===============================
+// Abilities
+// ===============================
+
+boomButton.onclick=()=>{
 
 
+    spawnParticle(
+        core.x,
+        core.y,
+        "#ff8c00",
+        180
+    );
+
+
+    stability =
+    Math.max(
+        0,
+        stability-15
+    );
+
+
+};
+
+
+
+sweepButton.onclick=()=>{
+
+
+    particles.forEach(p=>{
+
+
+        p.vx*=0.2;
+
+        p.vy*=0.2;
+
+
+    });
+
+
+};
+
+
+
+pauseButton.onclick=()=>{
+
+
+    paused=!paused;
+
+
+    pauseButton.textContent =
+    paused
+    ?
+    "▶ RESUME"
+    :
+    "⏸ PAUSE";
+
+
+};
+
+
+
+// ===============================
+// Counter Effects
+// ===============================
+
+plusButton.onclick=()=>{
+
+
+    counter++;
+
+    combo++;
+
+    score+=combo;
+
+
+    stability =
+    Math.min(
+        100,
+        stability+3
+    );
+
+
+    spawnParticle(
+        core.x,
+        core.y,
+        "#00ff66",
+        35
+    );
+
+
+    updateHUD();
+
+};
+
+
+
+minusButton.onclick=()=>{
+
+
+    counter--;
+
+    combo=1;
+
+
+    stability =
+    Math.max(
+        0,
+        stability-3
+    );
+
+
+    spawnParticle(
+        core.x,
+        core.y,
+        "#ff3333",
+        35
+    );
+
+
+    updateHUD();
+
+};
+
+
+
+// ===============================
+// Camera
+// ===============================
+
+function updateCamera(){
+
+
+    camera.x +=
+    (
+        ship.x-
+        canvas.width/2-
+        camera.x
+    )*.08;
+
+
+
+    camera.y +=
+    (
+        ship.y-
+        canvas.height/2-
+        camera.y
+    )*.08;
+
+
+}
+
+
+
+// ===============================
+// Score
+// ===============================
+
+function updateScore(dt){
+
+
+    score +=
+    Math.hypot(
+        ship.vx,
+        ship.vy
+    )
+    *
+    dt
+    *
+    .01;
+
+
+
+    if(score>best){
+
+        best=Math.floor(score);
+
+
+        localStorage.setItem(
+            "counterVerseBest",
+            best
+        );
+
+    }
+
+}
+
+
+
+// ===============================
+// HUD
+// ===============================
+
+function updateHUD(){
+
+
+    scoreText.textContent =
+    Math.floor(score);
+
+
+    bestText.textContent =
+    best;
+
+
+    comboText.textContent =
+    "x"+combo;
+
+
+    counterValue.textContent =
+    counter;
+
+
+    stabilityFill.style.width =
+    stability+"%";
+
+
+    stabilityText.textContent =
+    stability>75
+    ?
+    "Stable"
+    :
+    stability>40
+    ?
+    "Unstable"
+    :
+    "Critical";
+
+
+}
+
+
+
+// ===============================
+// Drawing
+// ===============================
+
+function drawBackground(){
+
+
+    ctx.fillStyle="#020611";
+
+
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+}
+
+
+
+function drawCore(){
+
+
+    const x=
+    core.x-camera.x;
+
+
+    const y=
+    core.y-camera.y;
+
+
+
+    ctx.shadowBlur=40;
+
+    ctx.shadowColor="#00e5ff";
+
+
+    ctx.fillStyle="#00e5ff";
+
+
+    ctx.beginPath();
+
+
+    ctx.arc(
+        x,
+        y,
+        core.radius,
+        0,
+        Math.PI*2
+    );
+
+
+    ctx.fill();
+
+
+    ctx.shadowBlur=0;
+
+
+}
 
 
 
 function drawShip(){
 
 
-
     ctx.save();
 
 
-
     ctx.translate(
-
-        ship.x,
-
-        ship.y
-
+        ship.x-camera.x,
+        ship.y-camera.y
     );
 
 
-
-    ctx.rotate(
-
-        ship.angle
-
-    );
+    ctx.rotate(ship.angle);
 
 
-
-
-    ctx.fillStyle="#58a6ff";
-
-
-
-    ctx.shadowColor="#58a6ff";
-
-    ctx.shadowBlur=25;
-
-
+    ctx.fillStyle="white";
 
 
     ctx.beginPath();
 
 
-
     ctx.moveTo(25,0);
-
 
     ctx.lineTo(-15,-12);
 
-
-    ctx.lineTo(-8,0);
-
+    ctx.lineTo(-5,0);
 
     ctx.lineTo(-15,12);
-
 
 
     ctx.closePath();
 
 
-
     ctx.fill();
-
-
-
-    ctx.shadowBlur=0;
-
 
 
     ctx.restore();
@@ -626,1633 +820,113 @@ function drawShip(){
 
 
 
-
-
-
-
-
-
-function wrap(obj){
-
-
-
-    if(obj.x<0)
-
-    obj.x=canvas.width;
-
-
-
-    if(obj.x>canvas.width)
-
-    obj.x=0;
-
-
-
-    if(obj.y<0)
-
-    obj.y=canvas.height;
-
-
-
-    if(obj.y>canvas.height)
-
-    obj.y=0;
-
-
-
-}
-/*================================================
-
- COUNTERVERSE v3.0
-
- PART 2/3
-
- CORE + PARTICLES
-
-================================================*/
-
-
-
-
-
-/*================================================
- STARFIELD
-================================================*/
-
-
-const stars=[];
-
-
-for(let i=0;i<180;i++){
-
-
-    stars.push({
-
-        x:
-        Math.random()*canvas.width,
-
-
-        y:
-        Math.random()*canvas.height,
-
-
-        size:
-        Math.random()*2+0.5,
-
-
-        speed:
-        Math.random()*20+5
-
-
-    });
-
-
-}
-
-
-
-
-
-
-
-function updateStars(dt){
-
-
-    for(let s of stars){
-
-
-        s.y+=s.speed*dt;
-
-
-
-        if(s.y>canvas.height){
-
-
-            s.y=0;
-
-            s.x=
-            Math.random()*canvas.width;
-
-
-        }
-
-
-    }
-
-
-}
-
-
-
-
-
-
-function drawStars(){
-
-
-
-    ctx.fillStyle="#ffffff";
-
-
-
-    for(let s of stars){
-
-
-        ctx.globalAlpha=.55;
-
-
-
-        ctx.beginPath();
-
-
-        ctx.arc(
-
-            s.x,
-
-            s.y,
-
-            s.size,
-
-            0,
-
-            Math.PI*2
-
-        );
-
-
-        ctx.fill();
-
-
-
-    }
-
-
-
-    ctx.globalAlpha=1;
-
-
-
-}
-
-
-
-
-
-
-
-
-
-
-/*================================================
- COUNTER CORE
-================================================*/
-
-
-const core={
-
-
-    x:
-
-    canvas.width/2,
-
-
-    y:
-
-    canvas.height/2,
-
-
-    vx:30,
-
-
-    vy:20,
-
-
-    radius:55,
-
-
-    pulse:0
-
-
-};
-
-
-
-
-
-
-
-function updateCore(dt){
-
-
-
-    core.x+=
-
-    core.vx*dt;
-
-
-
-    core.y+=
-
-    core.vy*dt;
-
-
-
-
-
-
-    if(
-
-    core.x<120 ||
-
-    core.x>
-
-    canvas.width-120
-
-    )
-
-    core.vx*=-1;
-
-
-
-
-
-    if(
-
-    core.y<120 ||
-
-    core.y>
-
-    canvas.height-120
-
-    )
-
-    core.vy*=-1;
-
-
-
-
-
-    core.pulse+=dt;
-
-
-
-}
-
-
-
-
-
-
-
-function drawCore(){
-
-
-
-    let glow=
-
-    Math.sin(core.pulse*5)*10;
-
-
-
-
-
-
-    ctx.beginPath();
-
-
-
-    ctx.arc(
-
-        core.x,
-
-        core.y,
-
-        130+glow,
-
-        0,
-
-        Math.PI*2
-
-    );
-
-
-
-    ctx.fillStyle=
-
-    "rgba(88,166,255,.08)";
-
-
-
-    ctx.fill();
-
-
-
-
-
-
-
-
-    ctx.beginPath();
-
-
-
-    ctx.arc(
-
-        core.x,
-
-        core.y,
-
-        core.radius+glow/3,
-
-        0,
-
-        Math.PI*2
-
-    );
-
-
-
-    ctx.fillStyle="#58a6ff";
-
-
-
-    ctx.shadowColor="#58a6ff";
-
-    ctx.shadowBlur=50;
-
-
-
-    ctx.fill();
-
-
-
-    ctx.shadowBlur=0;
-
-
-
-}
-
-
-
-
-
-
-
-
-
-/*================================================
- PARTICLES
-================================================*/
-
-
-const particles=[];
-
-
-
-
-
-
-
-function spawnParticle(
-
-x,
-
-y,
-
-type="normal",
-
-power=1
-
-){
-
-
-
-    if(particles.length>800)
-
-    return;
-
-
-
-
-
-
-    let angle=
-
-    Math.random()*Math.PI*2;
-
-
-
-    let speed=
-
-    (
-
-    Math.random()*100+40
-
-    )
-
-    *
-
-    power;
-
-
-
-
-
-    if(type==="boom")
-
-    speed*=3;
-
-
-
-
-
-
-    particles.push({
-
-
-
-        x:x,
-
-
-        y:y,
-
-
-
-        vx:
-
-        Math.cos(angle)*speed,
-
-
-
-        vy:
-
-        Math.sin(angle)*speed,
-
-
-
-        life:1,
-
-
-
-        size:
-
-        type==="boom"
-
-        ?
-
-        Math.random()*8+3
-
-        :
-
-        Math.random()*5+2,
-
-
-
-        type:type
-
-
-
-    });
-
-
-
-}
-
-
-
-
-
-
-
-
-function updateParticles(dt){
-
-
-
-    for(
-
-    let i=particles.length-1;
-
-    i>=0;
-
-    i--
-
-    ){
-
-
-
-        let p=
-
-        particles[i];
-
-
-
-
-
-
-
-        // gravity pull
-
-
-
-        let dx=
-
-        core.x-p.x;
-
-
-
-        let dy=
-
-        core.y-p.y;
-
-
-
-        let distance=
-
-        Math.hypot(dx,dy);
-
-
-
-
-
-
-        if(distance>40){
-
-
-
-            let force=
-
-            120/distance;
-
-
-
-            p.vx+=
-
-            dx/distance*
-
-            force*
-
-            dt;
-
-
-
-            p.vy+=
-
-            dy/distance*
-
-            force*
-
-            dt;
-
-
-
-        }
-
-
-
-
-
-
-
-
-        p.x+=
-
-        p.vx*dt;
-
-
-
-        p.y+=
-
-        p.vy*dt;
-
-
-
-
-
-
-
-
-        p.vx*=.985;
-
-        p.vy*=.985;
-
-
-
-
-
-
-
-        p.life-=
-
-        p.type==="boom"
-
-        ?
-
-        dt*2
-
-        :
-
-        dt*.6;
-
-
-
-
-
-
-
-
-        if(p.life<=0){
-
-
-            particles.splice(i,1);
-
-
-        }
-
-
-
-    }
-
-
-
-
-
-
-    // random space particles
-
-
-    if(Math.random()<.02){
-
-
-        spawnParticle(
-
-            Math.random()*canvas.width,
-
-            Math.random()*canvas.height,
-
-            "normal"
-
-        );
-
-
-    }
-
-
-
-}
-
-
-
-
-
-
-
-
 function drawParticles(){
 
 
-
-    for(let p of particles){
-
+    for(const p of particles){
 
 
-        ctx.globalAlpha=p.life;
+        ctx.globalAlpha =
+        p.life;
 
 
-
-
-
-        if(p.type==="engine"){
-
-
-            ctx.fillStyle="#ff9900";
-
-
-        }
-
-        else if(p.type==="plus"){
-
-
-            ctx.fillStyle="#2ecc71";
-
-
-        }
-
-        else if(p.type==="minus"){
-
-
-            ctx.fillStyle="#ff4d4d";
-
-
-        }
-
-        else if(p.type==="boom"){
-
-
-            ctx.fillStyle="#ffd43b";
-
-
-        }
-
-        else{
-
-
-            ctx.fillStyle="#58a6ff";
-
-
-        }
-
-
-
-
+        ctx.fillStyle =
+        p.color;
 
 
         ctx.beginPath();
 
 
-
         ctx.arc(
-
-            p.x,
-
-            p.y,
-
+            p.x-camera.x,
+            p.y-camera.y,
             p.size,
-
             0,
-
             Math.PI*2
-
         );
-
 
 
         ctx.fill();
 
 
-
     }
-
 
 
     ctx.globalAlpha=1;
 
 
 }
-/*================================================
 
- COUNTERVERSE v3.0
 
- PART 3/3
 
- GAME SYSTEMS + LOOP
-
-================================================*/
-
-
-
-
-
-
-/*================================================
- SCORE
-================================================*/
-
-
-function addScore(amount){
-
-
-
-    const now=
-
-    Date.now();
-
-
-
-
-
-    if(
-
-    now-game.lastScoreTime
-
-    <
-
-    1200
-
-    ){
-
-
-        game.combo=
-
-        Math.min(
-
-            game.combo+1,
-
-            10
-
-        );
-
-
-    }
-
-    else{
-
-
-        game.combo=1;
-
-
-    }
-
-
-
-    game.lastScoreTime=
-
-    now;
-
-
-
-
-
-
-    game.score+=
-
-    amount*
-
-    game.combo;
-
-
-
-
-
-
-
-    if(game.score>game.best){
-
-
-        game.best=
-
-        game.score;
-
-
-
-        localStorage.counterVerseBest=
-
-        game.best;
-
-
-    }
-
-
-
-
-
-
-    scoreText.textContent=
-
-    Math.floor(game.score);
-
-
-
-    bestText.textContent=
-
-    game.best;
-
-
-
-    comboText.textContent=
-
-    "x"+game.combo;
-
-
-
-}
-
-
-
-
-
-
-
-
-
-/*================================================
- COUNTER BUTTONS
-================================================*/
-
-
-function changeCounter(amount){
-
-
-
-    game.counter+=amount;
-
-
-
-    document
-
-    .getElementById("count")
-
-    .textContent=
-
-    game.counter;
-
-
-
-
-
-
-
-    document
-
-    .getElementById("coreValue")
-
-    .textContent=
-
-    game.counter;
-
-
-
-
-
-
-    addScore(1);
-
-
-
-
-
-
-    game.flash=.25;
-
-
-
-    game.flashColor=
-
-    amount>0
-
-    ?
-
-    "#2ecc71"
-
-    :
-
-    "#ff4d4d";
-
-
-
-
-
-
-
-    for(let i=0;i<40;i++){
-
-
-
-        spawnParticle(
-
-            core.x,
-
-            core.y,
-
-            amount>0
-
-            ?
-
-            "plus"
-
-            :
-
-            "minus",
-
-            1.5
-
-        );
-
-
-    }
-
-
-
-}
-
-
-
-
-
-
-document
-
-.getElementById("plus")
-
-.onclick=()=>{
-
-    changeCounter(1);
-
-};
-
-
-
-
-
-document
-
-.getElementById("minus")
-
-.onclick=()=>{
-
-    changeCounter(-1);
-
-};
-
-
-
-
-
-
-
-
-
-
-/*================================================
- BOOM
-================================================*/
-
-
-function boom(){
-
-
-
-    game.shake=40;
-
-
-
-    game.flash=.7;
-
-
-
-    game.flashColor="#ff9900";
-
-
-
-
-
-
-    for(let i=0;i<500;i++){
-
-
-
-        spawnParticle(
-
-            core.x,
-
-            core.y,
-
-            "boom",
-
-            2
-
-        );
-
-
-    }
-
-
-
-    addScore(25);
-
-
-
-}
-
-
-
-
-
-
-document
-
-.getElementById("boom")
-
-.onclick=boom;
-
-
-
-
-
-
-
-
-
-/*================================================
- CLEAN
-================================================*/
-
-
-document
-
-.getElementById("clean")
-
-.onclick=()=>{
-
-
-    particles.length=0;
-
-
-
-    game.flash=.2;
-
-
-
-    game.flashColor="#ffffff";
-
-
-};
-
-
-
-
-
-
-
-
-
-/*================================================
- PAUSE
-================================================*/
-
-
-function togglePause(){
-
-
-
-    game.paused=
-
-    !game.paused;
-
-
-
-    document
-
-    .getElementById("pause")
-
-    .textContent=
-
-
-    game.paused
-
-    ?
-
-    "▶ RESUME"
-
-    :
-
-    "⏸ PAUSE";
-
-
-
-}
-
-
-
-
-
-document
-
-.getElementById("pause")
-
-.onclick=
-
-togglePause;
-
-
-
-
-
-
-
-
-
-
-/*================================================
- MULTIPLAYER MESSAGE
-================================================*/
-
-
-document
-
-.getElementById("multiplayerButton")
-
-.onclick=()=>{
-
-
-    alert(
-
-    "🌐 CounterVerse Multiplayer\n\n"+
-
-    "The network is still under construction.\n\n"+
-
-    "Coming soon:\n\n"+
-
-    "🚀 Player ships\n"+
-
-    "🌌 Shared Counter Core\n"+
-
-    "💥 Shared events"
-
-    );
-
-
-};
-
-
-
-
-/*================================================
- COUNTERVERSE v3.1
-
- MOBILE SHIP CONTROLS
-================================================*/
-
-
-const mobileControlState = {
-
-    left:false,
-
-    right:false,
-
-    thrust:false,
-
-    brake:false
-
-};
-
-
-
-function holdButton(id, action){
-
-
-    const button =
-    document.getElementById(id);
-
-
-
-    button.addEventListener(
-    "touchstart",
-    (e)=>{
-
-        e.preventDefault();
-
-        mobileControlState[action]=true;
-
-    },
-    {passive:false}
-    );
-
-
-
-    button.addEventListener(
-    "touchend",
-    ()=>{
-
-        mobileControlState[action]=false;
-
-    }
-    );
-
-
-
-    button.addEventListener(
-    "mousedown",
-    ()=>{
-
-        mobileControlState[action]=true;
-
-    }
-    );
-
-
-
-    button.addEventListener(
-    "mouseup",
-    ()=>{
-
-        mobileControlState[action]=false;
-
-    }
-    );
-
-
-    button.addEventListener(
-    "mouseleave",
-    ()=>{
-
-        mobileControlState[action]=false;
-
-    }
-    );
-
-}
-
-
-
-holdButton("left","left");
-
-holdButton("right","right");
-
-holdButton("thrust","thrust");
-
-holdButton("brake","brake");
-
-
-
-
-
-/* Add mobile controls into ship physics */
-
-
-const oldUpdateShip =
-updateShip;
-
-
-
-updateShip=function(dt){
-
-
-
-    if(mobileControlState.left){
-
-        ship.angle-=
-
-        ship.turnSpeed*dt;
-
-    }
-
-
-
-    if(mobileControlState.right){
-
-        ship.angle+=
-
-        ship.turnSpeed*dt;
-
-    }
-
-
-
-
-    if(mobileControlState.thrust){
-
-
-        ship.speed+=
-
-        ship.thrust*dt;
-
-
-
-        spawnParticle(
-
-            ship.x,
-
-            ship.y,
-
-            "engine"
-
-        );
-
-
-    }
-
-
-
-
-
-    if(mobileControlState.brake){
-
-
-        ship.speed-=
-
-        250*dt;
-
-
-    }
-
-
-
-
-    oldUpdateShip(dt);
-
-
-};
-
-
-
-
-/*================================================
- FINAL LOOP
-================================================*/
-
+// ===============================
+// Game Loop
+// ===============================
 
 let lastTime=0;
 
 
+function gameLoop(time){
 
 
-
-
-function loop(time){
-
-
-
-    let dt=
-
-    (time-lastTime)
-
-    /
-
-    1000;
-
+    const dt =
+    Math.min(
+        (time-lastTime)/1000,
+        .05
+    );
 
 
     lastTime=time;
 
 
 
-
-
-    dt=Math.min(
-
-    dt,
-
-    .033
-
-    );
-
-
-
-
-
-
-
-
-    if(!game.paused){
-
-
-
-        updateStars(dt);
-
+    if(gameRunning && !paused){
 
 
         updateShip(dt);
 
-
-
         updateCore(dt);
-
-
 
         updateParticles(dt);
 
+        updateCamera();
+
+        updateScore(dt);
+
+        updateHUD();
+
+
+    }
 
 
 
-
-        ctx.clearRect(
-
-            0,
-
-            0,
-
-            canvas.width,
-
-            canvas.height
-
-        );
+    drawBackground();
 
 
 
-
-
-
-        if(game.shake>0){
-
-
-
-            ctx.save();
-
-
-
-            ctx.translate(
-
-                Math.random()*game.shake,
-
-                Math.random()*game.shake
-
-            );
-
-
-
-            game.shake*=.9;
-
-
-        }
-
-
-
-
-
-        drawStars();
-
-
+    if(gameRunning){
 
         drawCore();
 
-
+        drawShip();
 
         drawParticles();
 
-
-
-        drawShip();
-
-
-
-
-
-
-
-        if(game.shake<1){
-
-
-
-            ctx.restore();
-
-
-
-            game.shake=0;
-
-
-        }
-
-
-
     }
 
 
 
-
-
-
-
-
-    // flash effect
-
-
-    if(game.flash>0){
-
-
-
-        ctx.fillStyle=
-
-        game.flashColor;
-
-
-
-        ctx.globalAlpha=
-
-        game.flash;
-
-
-
-        ctx.fillRect(
-
-            0,
-
-            0,
-
-            canvas.width,
-
-            canvas.height
-
-        );
-
-
-
-        ctx.globalAlpha=1;
-
-
-
-        game.flash-=dt*2;
-
-
-    }
-
-
-
-
-
-
-    requestAnimationFrame(loop);
-
+    requestAnimationFrame(gameLoop);
 
 
 }
+
+
+
+// ===============================
+// Launch
+// ===============================
+
+resetWorld();
+
+requestAnimationFrame(gameLoop);
