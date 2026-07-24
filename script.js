@@ -1,6 +1,6 @@
 // =====================================================
-// CounterVerse v4.0.0
-// Core Engine
+// CounterVerse v4.0.1
+// Gameplay Update
 // =====================================================
 
 
@@ -14,8 +14,8 @@ const ctx = canvas.getContext("2d");
 
 function resizeCanvas(){
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
 
 }
 
@@ -25,10 +25,46 @@ resizeCanvas();
 
 
 // ===============================
-// Game State
+// UI
 // ===============================
 
-let running = true;
+const scoreText =
+document.getElementById("score");
+
+const bestText =
+document.getElementById("best");
+
+const comboText =
+document.getElementById("combo");
+
+const counterText =
+document.getElementById("counterValue");
+
+const plusButton =
+document.getElementById("plus");
+
+const minusButton =
+document.getElementById("minus");
+
+const stabilityText =
+document.getElementById("stabilityText");
+
+
+
+// ===============================
+// Game Data
+// ===============================
+
+let score = 0;
+
+let best =
+Number(localStorage.getItem("counterBest")) || 0;
+
+let combo = 1;
+
+let counter = 0;
+
+let stability = 100;
 
 
 
@@ -93,30 +129,24 @@ const core = {
 // Input
 // ===============================
 
-const keys = {};
+const keys={};
 
 
-window.addEventListener(
+addEventListener(
 "keydown",
-e=>{
-
-    keys[e.code]=true;
-
-});
+e=>keys[e.code]=true
+);
 
 
-window.addEventListener(
+addEventListener(
 "keyup",
-e=>{
-
-    keys[e.code]=false;
-
-});
+e=>keys[e.code]=false
+);
 
 
 
 // ===============================
-// Reset Universe
+// Reset
 // ===============================
 
 function resetWorld(){
@@ -127,10 +157,11 @@ function resetWorld(){
 
 
     ship.y =
-    canvas.height*0.75;
+    canvas.height*.75;
 
 
     ship.vx=0;
+
     ship.vy=0;
 
 
@@ -143,15 +174,6 @@ function resetWorld(){
     canvas.height/2;
 
 
-    core.vx=40;
-    core.vy=-20;
-
-
-
-    camera.x=0;
-    camera.y=0;
-
-
 }
 
 
@@ -160,10 +182,60 @@ resetWorld();
 
 
 // ===============================
+// Counter Controls
+// ===============================
+
+plusButton.onclick=()=>{
+
+
+    counter++;
+
+    combo++;
+
+
+    score += combo;
+
+
+    stability =
+    Math.min(
+        100,
+        stability+5
+    );
+
+
+    updateHUD();
+
+};
+
+
+
+minusButton.onclick=()=>{
+
+
+    counter--;
+
+
+    combo=1;
+
+
+    stability =
+    Math.max(
+        0,
+        stability-5
+    );
+
+
+    updateHUD();
+
+};
+
+
+
+// ===============================
 // Gravity
 // ===============================
 
-function gravity(body){
+function applyGravity(body){
 
 
     const dx =
@@ -175,10 +247,8 @@ function gravity(body){
 
 
     const distance =
-    Math.sqrt(
-        dx*dx+
-        dy*dy
-    );
+    Math.hypot(dx,dy);
+
 
 
     if(distance < 80)
@@ -193,19 +263,15 @@ function gravity(body){
 
 
     body.vx +=
-    (dx/distance)
-    *
-    force
-    *
-    0.016;
+    dx/distance *
+    force *
+    .016;
 
 
     body.vy +=
-    (dy/distance)
-    *
-    force
-    *
-    0.016;
+    dy/distance *
+    force *
+    .016;
 
 
 }
@@ -220,21 +286,18 @@ function updateShip(dt){
 
 
     if(keys["ArrowLeft"] ||
-       keys["KeyA"]){
+       keys["KeyA"])
 
         ship.angle -=
         ship.turnSpeed*dt;
 
-    }
 
 
     if(keys["ArrowRight"] ||
-       keys["KeyD"]){
+       keys["KeyD"])
 
         ship.angle +=
         ship.turnSpeed*dt;
-
-    }
 
 
 
@@ -260,35 +323,12 @@ function updateShip(dt){
 
 
 
-    gravity(ship);
-
-
-
-    const speed =
-    Math.sqrt(
-        ship.vx*ship.vx+
-        ship.vy*ship.vy
-    );
-
-
-    if(speed > ship.maxSpeed){
-
-        ship.vx =
-        (ship.vx/speed)
-        *
-        ship.maxSpeed;
-
-
-        ship.vy =
-        (ship.vy/speed)
-        *
-        ship.maxSpeed;
-
-    }
+    applyGravity(ship);
 
 
 
     ship.x += ship.vx*dt;
+
     ship.y += ship.vy*dt;
 
 
@@ -302,14 +342,9 @@ function updateShip(dt){
 
 function updateCore(dt){
 
+    core.x += core.vx*dt;
 
-    core.x +=
-    core.vx*dt;
-
-
-    core.y +=
-    core.vy*dt;
-
+    core.y += core.vy*dt;
 
 }
 
@@ -327,7 +362,7 @@ function updateCamera(){
         ship.x -
         canvas.width/2 -
         camera.x
-    )*0.08;
+    )*.08;
 
 
 
@@ -336,7 +371,42 @@ function updateCamera(){
         ship.y -
         canvas.height/2 -
         camera.y
-    )*0.08;
+    )*.08;
+
+
+}
+
+
+
+// ===============================
+// HUD
+// ===============================
+
+function updateHUD(){
+
+
+    scoreText.textContent =
+    Math.floor(score);
+
+
+    bestText.textContent =
+    best;
+
+
+    comboText.textContent =
+    "x"+combo;
+
+
+    counterText.textContent =
+    counter;
+
+
+    stabilityText.textContent =
+    "Stability: "
+    +
+    Math.floor(stability)
+    +
+    "%";
 
 
 }
@@ -361,8 +431,6 @@ function draw(){
 
 
 
-    // Core
-
     ctx.fillStyle="#00e5ff";
 
     ctx.beginPath();
@@ -379,8 +447,6 @@ function draw(){
 
 
 
-    // Ship
-
     ctx.save();
 
 
@@ -393,12 +459,10 @@ function draw(){
     ctx.rotate(ship.angle);
 
 
-
     ctx.fillStyle="white";
 
 
     ctx.beginPath();
-
 
     ctx.moveTo(25,0);
 
@@ -408,12 +472,9 @@ function draw(){
 
     ctx.lineTo(-15,12);
 
-
     ctx.closePath();
 
-
     ctx.fill();
-
 
 
     ctx.restore();
@@ -433,10 +494,10 @@ let lastTime=0;
 function loop(time){
 
 
-    const dt =
+    let dt =
     Math.min(
         (time-lastTime)/1000,
-        0.05
+        .05
     );
 
 
@@ -444,22 +505,41 @@ function loop(time){
 
 
 
-    if(running){
+    updateShip(dt);
+
+    updateCore(dt);
+
+    updateCamera();
 
 
-        updateShip(dt);
+    score +=
+    Math.hypot(
+        ship.vx,
+        ship.vy
+    )
+    *
+    dt
+    *
+    .01;
 
-        updateCore(dt);
 
-        updateCamera();
 
+    if(score>best){
+
+        best=Math.floor(score);
+
+        localStorage.setItem(
+            "counterBest",
+            best
+        );
 
     }
 
 
 
-    draw();
+    updateHUD();
 
+    draw();
 
 
     requestAnimationFrame(loop);
